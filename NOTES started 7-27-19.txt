@@ -1,0 +1,150 @@
+MISSION TO MARS
+
+KEY POINTS: 
+
+1. SCRAPING -- Create a Jupyter Notebook file called mission_to_mars.ipynb
+
+Scrape the NASA Mars news sit, JPL Mars Space Images - Featured Image, Mars Weather, Mars Facts, Mars Hemispheres
+
+2. MONGODB and FLASK application - Create a new HTML page that displays all of step 1.  Convert notebook to SCRAPE_MARS.py  
+
+Create a route that will import and call your scrape. 
+
+Store values as dict.
+
+create a root route to query DB and pass info to TEMPLATE.  INDEX.HTML
+
+3. Submit
+
+The Jupyter Notebook containing the scraping code used.
+Screenshots of your final application.
+Submit the link to your new repository to BootCampSpot.
+
+POTENTIAL CODING:
+
+1. SCRAPING: 
+
+https://vanessavang.com/scraping-mars  Good example.
+
+Weather class:  
+from splinter import Browser
+from bs4 import BeautifulSoup as bs
+import time
+def init_browser():
+    # @NOTE: Replace the path with your actual path to the chromedriver
+    #executable_path = {"executable_path": "/usr/local/bin/chromedriver"}
+    #return Browser("chrome", **executable_path, headless=False)
+def scrape_info():
+    browser = init_browser()
+
+    # Visit visitcostarica.herokuapp.com
+    #url = "https://visitcostarica.herokuapp.com/"
+    #browser.visit(url)
+
+#    time.sleep(1)
+
+    # Scrape page into Soup
+#    html = browser.html
+ #   soup = bs(html, "html.parser")
+
+    # Get the average temps
+#    avg_temps = soup.find('div', id='weather')
+
+    # Get the min avg temp
+#    min_temp = avg_temps.find_all('strong')[0].text
+
+    # Get the max avg temp
+#    max_temp = avg_temps.find_all('strong')[1].text
+
+    # BONUS: Find the src for the sloth image
+#    relative_image_path = soup.find_all('img')[2]["src"]
+#    sloth_img = url + relative_image_path
+
+    # Store data in a dictionary
+#    costa_data = {
+        "sloth_img": sloth_img,
+ #       "min_temp": min_temp,
+        "max_temp": max_temp
+    }
+
+#    # Close the browser after scraping
+#    browser.quit()
+
+    # Return results
+#    return costa_data
+
+https://www.dataquest.io/blog/web-scraping-tutorial-python/
+
+
+DATA SCIENCE RESOURCE:
+
+https://towardsdatascience.com/simple-beginning-to-web-scraping-ef2f2287aff9
+
+import requests
+from bs4 import BeautifulSoup, Comment
+import pandas as pd
+import re
+import matplotlib.pyplot as plt
+
+url='https://indianbloggers.org/'
+content = requests.get(url).text
+
+#initalizing an empty dictionary that would be written as Pandas Dataframe and then CSV
+d = {'title':[],'links':[]}
+#initializing blog hosting category
+cat = {'blogspot':0,'wordpress':0,'others':0}
+
+soup = BeautifulSoup(content, "html.parser")
+for link in soup.find_all('a',):
+    if len(link.text.strip()) > 1 and bool(re.match('^http',link['href'])) and not bool(re.search('indianbloggers|twitter|facebook',link['href'])):
+        d['title'].append(link.text)
+        d['links'].append(link['href'])
+        #finding the blog hosting type
+        if re.search('blogspot',link['href']):
+            cat['blogspot']+=1
+        elif re.search('wordpress',link['href']):
+            cat['wordpress']+=1
+        else:
+            cat['others']+=1
+        #d['len'].append(len(link.text.strip()))
+
+blog_list = pd.DataFrame(d).set_index('title')
+print(blog_list.head())
+blog_list.to_csv('blog_list.csv', encoding='utf-8')
+print(str(len(blog_list.index))+' rows written')
+print(cat)
+>>> 
+                                            links
+title                                            
+Amit Agarwal               http://www.labnol.org/
+Jyotsna Kamat  http://www.kamat.com/jyotsna/blog/
+Amit Varma             http://www.indiauncut.com/
+Sidin Vadukut              http://www.whatay.com/
+Hawkeye           http://hawkeyeview.blogspot.in/
+363 rows written
+{'wordpress': 49, 'blogspot': 106, 'others': 208}
+
+#plotting the blog hosting type 
+plt.bar(range(len(cat)), cat.values(), align='center')
+plt.xticks(range(len(cat)), cat.keys())
+plt.show()
+
+CHROME DRIVER
+
+https://splinter.readthedocs.io/en/latest/drivers/chrome.html
+
+from splinter import Browser
+executable_path = {'executable_path':'</path/to/chrome>'}
+
+browser = Browser('chrome', **executable_path)
+
+
+from splinter import Browser
+browser = Browser('chrome')
+
+
+
+
+
+
+
