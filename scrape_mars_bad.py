@@ -72,7 +72,7 @@ def scrape_mars():
         news_p = p_text.text
         mars['news_p'] = news_p
         
-        if db.marsdata.find({<check title refer to docs>}).limit(1).size(
+        if db.marsdata.find({<title>}).limit(1).size(
         print(mars)
         db.marsdata.insert(mars)
     
