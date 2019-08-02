@@ -1,29 +1,30 @@
 # STEP 2 - MongoDB and Flask Application
-from bs4 import BeautifulSoup as bs
-import requests
-from splinter import Browser
 import pandas as pd
-import numpy as np
+import requests
+from bs4 import BeautifulSoup
+import re
+import pymongo
 import time
+from splinter import Browser
+from selenium import webdriver
+
 
 def init_browser():
-    executable_path = {"executable_path": "chromedriver.exe"}
-    return Browser("chrome", **executable_path, headless=False)
+    executable_path = {'executable_path': 'chromedriver.exe'}
+    return Browser('chrome', **executable_path, headless=False)
 
+def scrape_mars():
+    #NEWS scrape
+    browser = init_browser()
+    url = 'https://mars.nasa.gov/news'
+    html = requests.get(url)
+    browser.visit(url)
 
-def scrape():
-    mars = {}
-    browser= init_browser()
+    soup = BeautifulSoup(html, 'html.parser')
 
-    #Scrape NEWS
-    url= 'https://mars.nasa.gov/news/'
-    response= requests.get(url)
-    soup= bs(response.text, 'html.parser')
-
-    #Title and paragraph
-    news_title= soup.find("div", class_="content_title").text
-    news_p= soup.find("div", class_="rollover_description_inner").text
-
+    news_title = soup.find_all('div', class_='content_title')[0].text
+   
+    news_p = soup.find_all('div', class_='rollover_description')[0].text
   
     # IMAGES
     #url = 'https://ww.jpl.nasa.gov/spaceimages/?search=&category=Mars'
@@ -71,7 +72,7 @@ def scrape():
 #  'img_url': 'https://astrogeology.usgs.gov/cache/images/7cf2da4bf549ed01c17f206327be4db7_valles_marineris_enhanced.tif_full.jpg'}
 #  ]
 
-    mars = {
+    mars_data = {
         "News_Title": news_title,
         "News_Paragraph": news_p,
     #    "Image": featured_image_url,
