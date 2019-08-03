@@ -60,12 +60,12 @@ def scrape():
     mars_table= pd.read_html(mars_url)
     mars_table
 
-    mars_df= mars_table[0]
+    mars_df= mars_table[1]
     mars_df.index.drop
-    #mars_df.set_index(0, inplace=True)
+    mars_df.set_index(0, inplace=True)
     mars_df.index.names= [None]
-    mars_df.columns= ['Compare', 'Mars', 'Earth']
-    
+    mars_df.columns= ['Mars']
+ 
     mars_df_html=mars_df.to_html()
     mars_df_html
 
