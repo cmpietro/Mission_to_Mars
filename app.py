@@ -16,7 +16,7 @@ mongo = PyMongo(app, uri="mongodb://localhost:27017/app")
 @app.route("/")
 def home():
 
-    # Find one record of data from the mongo database
+    # Find one record of data from the db 
     mars = mongo.db.mars.find_one()
     print(mars)
     # Return template and data

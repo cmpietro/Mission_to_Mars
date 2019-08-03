@@ -1,4 +1,5 @@
 # STEP 2 - MongoDB and Flask Application
+#Dependencies
 from bs4 import BeautifulSoup as bs
 import requests
 from splinter import Browser
@@ -15,75 +16,88 @@ def scrape():
     mars = {}
     browser= init_browser()
 
-    #Scrape NEWS
+    #NEWS
     url= 'https://mars.nasa.gov/news/'
     response= requests.get(url)
     soup= bs(response.text, 'html.parser')
 
-    #Title and paragraph
+    #TITLE and PARAGRAPH
     news_title= soup.find("div", class_="content_title").text
     news_p= soup.find("div", class_="rollover_description_inner").text
 
-  
-    # IMAGES
-    #url = 'https://ww.jpl.nasa.gov/spaceimages/?search=&category=Mars'
-    #browser = Browser('chrome', headless=False)
-    #browser.visit(url)
+    #IMAGES
+    url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
+    browser.visit(url)
 
-    #html = browser.html
-    #soup = BeautifulSoup(html, 'html.parser')
-    #featured_image_url = soup.find_all('img')[0]['src']
+    html= browser.html
+    im_soup=bs(html,'html.parser')
+    featured_image= im_soup.select('li.slide a.fancybox')
+
+    #LIST TO GET DATA
+    img_list = [i.get('data-fancybox-href') for i in featured_image]
+
+    #Combines URLS
+    base_url = 'https://www.jpl.nasa.gov'
+    featured_image_url = base_url + img_list[0]   
+
+    #WEATHER
+    url= 'https://twitter.com/marswxreport?lang=en'
+    tw_response= requests.get(url)
+    tw_soup= bs(tw_response.text, 'html.parser')
+
+    #List of Tweets
+    weather_list= []
+    for weather_info in tw_soup.find_all("p", class_="TweetTextSize TweetTextSize--normal js-tweet-text tweet-text"):
+        weather_list.append(weather_info.text.strip())
+
+    #add conditional to get Sol info
+    for tweet in reversed (weather_list):
+        if tweet[:3]=="InS":
+            mars_weather=tweet
+
+    #FACTS
+    mars_url= 'https://space-facts.com/mars/'
+    mars_table= pd.read_html(mars_url)
+    mars_table
+
+    mars_df= mars_table[0]
+    mars_df.index.drop
+    #mars_df.set_index(0, inplace=True)
+    mars_df.index.names= [None]
+    mars_df.columns= ['Compare', 'Mars', 'Earth']
     
-    #TWITTER - weather
-    #url = 'https://twitter.com/marswxreport?lang=en'
-    #browser.visit(url)
-    #html = browser.html
-    #soup = BeautifulSoup(html, 'html.parser')
-    #mars_weather = soup.find_all('p', class_='TweetTextSize TweetTextSize--normal js-tweet-text tweet-text')[0].text.strip()
-  
-    # MARS FACTS
-    #url = 'https://space-facts.com/mars/'
-    #browser.visit(url)
-    #mars_profile = pd.read_html(url)
-    #mars_profile = pd.DataFrame(mars_profile[0])
-    #mars_profile = mars_profile.to_html(header = False, index = False)
-    #mars_profile
+    mars_df_html=mars_df.to_html()
+    mars_df_html
 
-    # MARS Hemispheres
-    #url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
-    #browser.visit(url)
-    #html = browser.html
-    #soup = BeautifulSoup(html, 'html.parser')
-    #items = soup.find_all ('div', class_='item')
-    #hemisphere_image_urls = []
+    mars_df_html.replace('\n','')
 
-    #hemisphere_main_url = 'https://astrogeology.usgs.gov'
+    mars_html= mars_df.to_html()
 
-        
-    #hemisphere_image_urls=[
-#        {'title': 'Cerberus Hemisphere Enhanced',
-#  'img_url': 'https://astrogeology.usgs.gov/cache/images/cfa62af2557222a02478f1fcd781d445_cerberus_enhanced.tif_full.jpg'},
-# {'title': 'Schiaparelli Hemisphere Enhanced',
-#  'img_url': 'https://astrogeology.usgs.gov/cache/images/3cdd1cbf5e0813bba925c9030d13b62e_schiaparelli_enhanced.tif_full.jpg'},
-# {'title': 'Syrtis Major Hemisphere Enhanced',
-#  'img_url': 'https://astrogeology.usgs.gov/cache/images/ae209b4e408bb6c3e67b6af38168cf28_syrtis_major_enhanced.tif_full.jpg'},
-# {'title': 'Valles Marineris Hemisphere Enhanced',
-#  'img_url': 'https://astrogeology.usgs.gov/cache/images/7cf2da4bf549ed01c17f206327be4db7_valles_marineris_enhanced.tif_full.jpg'}
-#  ]
+    #HEMISPHERES
+    mars_hem_url= 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    mars_hem_response= requests.get(mars_hem_url)
+    soup= bs(mars_hem_response.text, 'html.parser')
+    mars_hem= soup.find_all('a', class_='itemLink product-item')
 
-    mars = {
-        "News_Title": news_title,
-        "News_Paragraph": news_p,
-    #    "Image": featured_image_url,
-    #    "Weather": mars_weather,
-    #    "Attibutes": mars_profile,
-    #    "Hemispheres": items,
-    #    "Main Hemisphere": hemisphere_main_url,
-    #    "Cerberus":hemisphere_image_urls[0]['img_url'],
-    #    "Schiaparelli":hemisphere_image_urls[1]['img_url'],
-    #    "Syrtis Major":hemisphere_image_urls[2]['img_url'],
-    #    "Valles Marineris":hemisphere_image_urls[3]['img_url']
+    hem_image_urls=[]
+    for hem_image in mars_hem:
+        im_title= hem_image.find('h3').text
+        link= "https://astrogeology.usgs.gov" + hem_image['href']
+        im_request= requests.get(link)
+        soup= bs(im_request.text, "html.parser")
+        img_tag=soup.find("div", class_="downloads").find('ul').find('li')
+        img_url= img_tag.a['href']
+        hem_image_urls.append({"Title":im_title, "Image_url": img_url})
+
+    mars= {
+        "title": news_title,
+        "text": news_p,
+        "image": featured_image_url,
+        "weather": mars_weather,
+        "facts": mars_html,
+        "hemispheres": hem_image_urls
     }
-
+    
     browser.quit()
-    return mars_data 
+
+    return mars
